@@ -6,3 +6,18 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Shopify Extension
+.shopify/
+shopify-extension/node_modules/
+shopify-extension/dist/
+shopify-extension/.env
+
+# GCP Middleware
+gcp-middleware/node_modules/
+gcp-middleware/dist/
+gcp-middleware/.env
+
+# Google Workspace Add-on (Apps Script)
+workspace-addon/.clasp.json
+workspace-addon/node_modules/
