@@ -1,0 +1,5 @@
+{
+  "name": "UnderItAll Ecosystem",
+  "description": "Tri-node architecture consisting of a Shopify Customer Account UI Extension, a Google Cloud Run Node.js Middleware, and a Google Workspace Add-on.",
+  "requestFramePermissions": []
+}

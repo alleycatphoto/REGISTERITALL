@@ -1,0 +1,17 @@
+api_version = "2024-04"
+
+[[extensions]]
+name = "UnderItAll Wholesale"
+handle = "underitall-wholesale"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/index.js"
+target = "customer-account.page.render"
+
+[[extensions.targeting]]
+module = "./src/index.js"
+target = "customer-account.order.action.menu-item.render"
+
+[extensions.capabilities]
+network_access = true

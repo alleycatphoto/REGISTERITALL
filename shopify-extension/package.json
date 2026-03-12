@@ -1,0 +1,8 @@
+{
+  "name": "shopify-extension",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@shopify/customer-account-ui-extensions": "^1.0.0"
+  }
+}
