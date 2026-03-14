@@ -1,0 +1,90 @@
+<p style="text-align: center;">Already have an account? <a href="/customer_authentication/login?return_to={{ "/collections/rug-pad-sizes" | url_encode }}"><span style="text-decoration: underline;">Please login here.</span></a></p>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const customerEmail = '{{ customer.email }}';
+    const locationId = 'G3HF4z9DuWL3asaPQRIY';
+    
+    // Your live Google Cloud endpoint
+    const googleCloudUrl = `https://gethighlevelcontact-fu2gkxkueq-uc.a.run.app/?email=${encodeURIComponent(customerEmail)}&locationId=${locationId}`;
+    
+    fetch(googleCloudUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.contact) {
+                const contact = data.contact;
+                
+                // Helper to safely grab custom field values
+                const getCustomFieldValue = (fieldId) => {
+                    if (!contact.customFields) return '';
+                    const field = contact.customFields.find(f => f.id === fieldId);
+                    if (Array.isArray(field?.value)) return field.value[0];
+                    return field ? field.value : '';
+                };
+
+                const params = new URLSearchParams();
+                
+                // --- STANDARD FIELDS ---
+                if (contact.firstName) params.append('first_name', contact.firstName);
+                if (contact.lastName) params.append('last_name', contact.lastName);
+                if (contact.companyName) params.append('organization', contact.companyName);
+                if (contact.email) params.append('email', contact.email);
+                if (contact.website) params.append('website', contact.website);
+                if (contact.address1) params.append('address', contact.address1);
+                if (contact.city) params.append('city', contact.city);
+                if (contact.state) params.append('state', contact.state);
+                if (contact.postalCode) params.append('postal_code', contact.postalCode);
+                if (contact.country) params.append('country', contact.country);
+                
+                // --- PHONE FIX ---
+                // Strip the '+1' if it exists so the US formatter accepts it perfectly
+                if (contact.phone) {
+                    const cleanPhone = contact.phone.replace(/^\+1\s?/, '');
+                    params.append('phone', cleanPhone);
+                }
+                
+                // --- CUSTOM FIELDS ---
+                const title = getCustomFieldValue('1NaG60dA0VSqOEuGkeuj');
+                if (title) params.append('title', title);
+
+                const instagram = getCustomFieldValue('RvHFS8FJz8SLvszblRjO');
+                if (instagram) params.append('instagram', instagram);
+
+                const vatId = getCustomFieldValue('xvBHdjysNuFq5eYaFBwi');
+                if (vatId) params.append('tax_identifier', vatId);
+
+                const secretInstalls = getCustomFieldValue('eU0k8IjQC550YZcFPce6');
+                if (secretInstalls) params.append('additional_information', secretInstalls);
+
+                const sampleSet = getCustomFieldValue('Y25JYxXcJxcH3vSZQE9u');
+                if (sampleSet) params.append('sample_set', sampleSet);
+
+                // --- BUSINESS TYPE FIX ---
+                // We use the ID to find the value in the API, but we use the hidden query key "biz_type" to pass it!
+                const bizType = getCustomFieldValue('NsDvW0qgfMkWcMOKelS8');
+                if (bizType) params.append('biz_type', bizType);
+                
+                const taxDocUpload = getCustomFieldValue('IHv9RuEDi3Ie8K2o1dQC');
+                if (taxDocUpload && Object.keys(taxDocUpload).length > 0) {
+                   params.append('certificate_already_on_file', 'Yes'); 
+                }
+
+                // Update the iframe URL to magically autofill the form
+                const iframe = document.getElementById('inline-6OQGhlBRRFRwesLU3f72');
+                if (iframe) {
+                    const baseUrl = "https://my.itsunderitall.app/widget/form/6OQGhlBRRFRwesLU3f72";
+                    iframe.src = `${baseUrl}?${params.toString()}`;
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching contact data:', error));
+});
+</script>
+
+<iframe
+    src="https://my.itsunderitall.app/widget/form/6OQGhlBRRFRwesLU3f72?email={{ customer.email }}"
+    style="width:100%; min-height:2600px; border:none; border-radius:3px"
+    id="inline-6OQGhlBRRFRwesLU3f72" 
+    title="UNDERITALL REGISTRATION"
+>
+</iframe>

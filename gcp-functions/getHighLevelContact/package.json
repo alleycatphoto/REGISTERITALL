@@ -1,0 +1,9 @@
+{
+  "name": "get-highlevel-contact",
+  "version": "1.0.0",
+  "description": "Google Cloud Function to fetch HighLevel contacts",
+  "main": "index.js",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0"
+  }
+}

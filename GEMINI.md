@@ -71,7 +71,28 @@ This add-on uses the Card Service API to render native Google Workspace UIs.
 - **Manifest**: `appsscript.json` MUST contain the correct `oauthScopes`. If you add new Google API calls (e.g., Drive API), you MUST add the corresponding scope here.
 - **Styling**: Use the `COLORS` constant defined in `Code.gs` (`#f2633a` and `#696a6d`) to maintain brand consistency via `CardService` styling methods. Do not use arbitrary hex codes.
 
-## 5. Global Brand Tokens
+## 5. Node 4: HighLevel Contact Fetcher & Liquid Autofill
+
+### Technical Info & Launch
+This node consists of a Google Cloud Function (`/gcp-functions/getHighLevelContact`) and a Shopify Liquid snippet (`/shopify-liquid/registration-autofill.liquid`). It fetches contact data from HighLevel (GHL) and autofills an embedded iframe form.
+
+1. **Cloud Function Deployment**:
+   ```bash
+   cd gcp-functions/getHighLevelContact
+   gcloud functions deploy getHighLevelContact \
+     --runtime nodejs18 \
+     --trigger-http \
+     --allow-unauthenticated \
+     --set-env-vars="HL_API_KEY=your_highlevel_api_key"
+   ```
+2. **Liquid Integration**: Copy the contents of `registration-autofill.liquid` into the relevant Shopify theme file (e.g., a custom page template). Ensure the `googleCloudUrl` points to the deployed Cloud Function URL.
+
+### Agentic Rules for HighLevel Integration
+- **CORS**: The Cloud Function MUST return `Access-Control-Allow-Origin: *` to allow the Shopify storefront to fetch data.
+- **Custom Fields**: HighLevel custom fields are referenced by their specific IDs (e.g., `1NaG60dA0VSqOEuGkeuj`). If custom fields change in HighLevel, the mapping in the Liquid script must be updated.
+- **URL Parameters**: The Liquid script constructs a URL with query parameters to autofill the HighLevel form iframe. Ensure parameter names match the form's expected input names.
+
+## 6. Global Brand Tokens
 When generating or modifying UI components across any node, strictly adhere to:
 - **Primary Accent**: Vibrant Orange/Red (`#f2633a`)
 - **Neutral/Text**: Felt Grey (`#696a6d`)

@@ -1,10 +1,10 @@
 # UnderItAll Unified Commerce & Workspace Ecosystem
 
-Welcome to the UnderItAll ecosystem repository. This project implements a tri-node architecture designed to streamline wholesale and trade registrations, integrating Shopify, Google Cloud, and Google Workspace.
+Welcome to the UnderItAll ecosystem repository. This project implements a multi-node architecture designed to streamline wholesale and trade registrations, integrating Shopify, Google Cloud, Google Workspace, and HighLevel (GHL).
 
 ## Architecture Overview
 
-This repository contains four main components:
+This repository contains five main components:
 
 1. **Web Registration Form (React/Vite)**
    - Located in the root directory (`/src`).
@@ -25,6 +25,11 @@ This repository contains four main components:
    - Located in `/workspace-addon`.
    - A Google Workspace Add-on (Gmail, Drive, Calendar, Docs, Sheets, Slides) that provides an internal dashboard for the UnderItAll team.
    - Fetches and displays the latest trade applications directly from the Google Sheet.
+
+5. **HighLevel Contact Fetcher & Shopify Liquid Autofill**
+   - Located in `/gcp-functions/getHighLevelContact` and `/shopify-liquid`.
+   - A Google Cloud Function that securely fetches contact data from HighLevel using an email address.
+   - A Shopify Liquid snippet that calls the Cloud Function and dynamically autofills an embedded HighLevel iframe form with the customer's existing data.
 
 ## Getting Started
 
@@ -61,6 +66,18 @@ cd workspace-addon
 clasp login
 clasp create --type standalone --title "UnderItAll Wholesale"
 clasp push
+```
+
+### 5. HighLevel Contact Fetcher (Cloud Function)
+```bash
+cd gcp-functions/getHighLevelContact
+npm install
+# Deploy to Google Cloud Functions
+gcloud functions deploy getHighLevelContact \
+  --runtime nodejs18 \
+  --trigger-http \
+  --allow-unauthenticated \
+  --set-env-vars="HL_API_KEY=your_highlevel_api_key"
 ```
 
 ## Brand Guidelines
