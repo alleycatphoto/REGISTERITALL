@@ -64,13 +64,97 @@ async function startServer() {
     }
   };
 
+  // MCP Manifest Endpoint
+  app.get('/mcp/manifest', (req, res) => {
+    res.json({
+      tools: [
+        {
+          name: shopifyTool.name,
+          description: shopifyTool.description,
+          inputSchema: shopifyTool.parameters
+        },
+        {
+          name: ghlTool.name,
+          description: ghlTool.description,
+          inputSchema: ghlTool.parameters
+        }
+      ],
+      resources: [],
+      prompts: [],
+      errors: []
+    });
+  });
+
+  // Generate MCP Manifest Endpoint
+  app.post('/api/generate-mcp', async (req, res) => {
+    const { description } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "Missing Gemini API Key" });
+
+    const apiKey = process.env.GEMINI_API_KEY.replace(/^["']|["']$/g, '').trim();
+
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-pro-preview',
+        contents: `Generate an MCP manifest for an API with the following description:\n\n${description}`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              tools: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING, description: "The name of the tool. This field is REQUIRED and must not be empty. It's used to generate the operation ID." },
+                    title: { type: Type.STRING, description: "A human-readable title for the tool. Optional." },
+                    description: { type: Type.STRING, description: "A description of what the tool does. Optional." },
+                    inputSchema: { type: Type.OBJECT, description: "A JSON Schema object describing the input parameters for the tool. Optional. Can be any valid JSON object." },
+                    outputSchema: { type: Type.OBJECT, description: "A JSON Schema object describing the output structure of the tool. Optional. Can be any valid JSON object." },
+                    annotations: {
+                      type: Type.OBJECT,
+                      description: "Optional annotations for the tool.",
+                      properties: {
+                        title: { type: Type.STRING, description: "Annotation title. Optional." },
+                        readOnlyHint: { type: Type.BOOLEAN, description: "Hint indicating if the tool is read-only. Optional." },
+                        destructiveHint: { type: Type.BOOLEAN, description: "Hint indicating if the tool can have destructive side effects. Optional." },
+                        idempotentHint: { type: Type.BOOLEAN, description: "Hint indicating if the tool is idempotent. Optional." },
+                        openWorldHint: { type: Type.BOOLEAN, description: "Hint indicating if the tool interacts with the open world. Optional." },
+                        additionalHints: { type: Type.OBJECT, description: "A map of additional string key-value hints. Optional." }
+                      }
+                    }
+                  },
+                  required: ["name"]
+                },
+                description: "A list of tool objects. This array is REQUIRED at the top level."
+              },
+              resources: { type: Type.ARRAY, items: { type: Type.OBJECT }, description: "Optional array of resource objects. The parser doesn't strictly define their content." },
+              prompts: { type: Type.ARRAY, items: { type: Type.OBJECT }, description: "Optional array of prompt objects. The parser doesn't strictly define their content." },
+              errors: { type: Type.ARRAY, items: { type: Type.OBJECT }, description: "Optional array of error objects. The parser doesn't strictly define their content." }
+            },
+            required: ["tools"]
+          }
+        }
+      });
+      
+      res.json(JSON.parse(response.text || "{}"));
+    } catch (error: any) {
+      console.error('Generate MCP Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // AI Assistant Endpoint
   app.post('/ai-assist', async (req, res) => {
     const { prompt, context } = req.body;
     if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "Missing Gemini API Key" });
 
+    const apiKey = process.env.GEMINI_API_KEY.replace(/^["']|["']$/g, '').trim();
+
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const ai = new GoogleGenAI({ apiKey });
       
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -168,7 +252,8 @@ async function startServer() {
 
       let aiSummary = "N/A";
       if (process.env.GEMINI_API_KEY) {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const apiKey = process.env.GEMINI_API_KEY.replace(/^["']|["']$/g, '').trim();
+        const ai = new GoogleGenAI({ apiKey });
         const prompt = `Analyze this wholesale applicant: 
         Company: ${data.companyName}
         Type: ${data.companyType}

@@ -12,7 +12,7 @@ functions.http('getHighLevelContact', async (req, res) => {
     return;
   }
 
-  const email = req.query.email;
+  const email = req.query.email || 'salesadmin@itsunderitall.com';
   const locationId = req.query.locationId;
 
   if (!email || !locationId) {
