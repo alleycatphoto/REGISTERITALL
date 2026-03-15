@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Google Cloud Function to fetch HighLevel contacts",
   "main": "index.js",
+  "scripts": {
+    "deploy": "gcloud functions deploy getHighLevelContact --runtime nodejs18 --trigger-http --allow-unauthenticated --set-env-vars=\"HL_API_KEY=$HL_API_KEY\""
+  },
   "dependencies": {
     "@google-cloud/functions-framework": "^3.3.0"
   }

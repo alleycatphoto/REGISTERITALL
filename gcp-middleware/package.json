@@ -4,9 +4,11 @@
   "description": "Google Cloud Run Middleware for UnderItAll",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "deploy": "gcloud run deploy underitall-middleware --source . --platform managed --region us-central1 --allow-unauthenticated --set-env-vars=\"SPREADSHEET_ID=$SPREADSHEET_ID,GOOGLE_APPLICATION_CREDENTIALS_JSON=$GOOGLE_APPLICATION_CREDENTIALS_JSON,GEMINI_API_KEY=$GEMINI_API_KEY\""
   },
   "dependencies": {
+    "@google/genai": "^0.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

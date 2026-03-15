@@ -28,6 +28,10 @@ function buildUniversalHomepage(e) {
       var text = '<b>' + sub.firmName + '</b><br>' +
                  '<font color="' + COLORS.NEUTRAL + '">' + sub.firstName + ' ' + sub.lastName + ' | ' + sub.email + '</font>';
       
+      if (sub.aiSummary) {
+        text += '<br><br><i>✨ AI Insight: ' + sub.aiSummary + '</i>';
+      }
+      
       section.addWidget(CardService.newTextParagraph().setText(text));
       
       var viewButton = CardService.newTextButton()
@@ -62,7 +66,7 @@ function fetchRecentSubmissions() {
     var startRow = Math.max(2, lastRow - 9); // Get up to last 10 rows
     var numRows = lastRow - startRow + 1;
     
-    var data = sheet.getRange(startRow, 1, numRows, 20).getValues(); // Assuming 20 columns based on schema
+    var data = sheet.getRange(startRow, 1, numRows, 21).getValues(); // Assuming 21 columns based on schema + AI summary
     
     var submissions = [];
     for (var i = data.length - 1; i >= 0; i--) { // Reverse to show newest first
@@ -87,7 +91,8 @@ function fetchRecentSubmissions() {
         marketingOptIn: row[16],
         smsConsent: row[17],
         termsAccepted: row[18],
-        receivedSampleSet: row[19]
+        receivedSampleSet: row[19],
+        aiSummary: row[20] || ''
       });
     }
     return submissions;

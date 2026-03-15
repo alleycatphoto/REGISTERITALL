@@ -98,3 +98,14 @@ When generating or modifying UI components across any node, strictly adhere to:
 - **Neutral/Text**: Felt Grey (`#696a6d`)
 - **Backgrounds**: Cream (`#f3f1e9`), Greige (`#e1e0da`), Soft Black (`#212227`), Green Gradient (`#869880`)
 - **Typography**: Archivo (Headers), Vazirmatn (Body), Lora (Accents)
+
+## 7. Gitignore Configuration for Publishing
+
+When publishing or sharing this repository, it is critical to prevent sensitive credentials and environment-specific build artifacts from being committed. The `.gitignore` file must explicitly exclude the following to maintain security and a clean repository:
+
+- **Environment Variables**: `**/.env`, `**/.env.*` (except `.env.example`). Never commit API keys or Service Account JSONs.
+- **Node Modules**: `**/node_modules/` across all subdirectories (root, `gcp-middleware`, `shopify-extension`, `gcp-functions`).
+- **Build Artifacts**: `**/dist/`, `**/build/`, and Shopify-specific hidden folders like `**/.shopify/`.
+- **Apps Script Credentials**: `workspace-addon/.clasp.json` (contains specific script IDs and deployment references that should remain local to the developer's environment).
+
+*Agent Directive*: Always verify that `.gitignore` rules are actively ignoring these paths before executing any `git commit` or repository export commands.

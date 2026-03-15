@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { google } = require('googleapis');
+const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -38,6 +39,30 @@ app.post('/submit-wholesale', async (req, res) => {
   try {
     const data = req.body;
 
+    // Gemini Intelligence: Analyze the applicant
+    let aiSummary = "AI Summary unavailable.";
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const prompt = `Analyze this wholesale trade application for UnderItAll (a rug pad company). 
+Firm Name: ${data.firmName}
+Business Type: ${data.businessType}
+Years in Business: ${data.yearsInBusiness}
+Website: ${data.website || 'None'}
+Instagram: ${data.instagramHandle || 'None'}
+
+Provide a brief, 1-2 sentence professional summary of this applicant's business and their potential fit for a wholesale trade program.`;
+        
+        const response = await ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: prompt,
+        });
+        aiSummary = response.text;
+      } catch (aiError) {
+        console.error('Gemini API Error:', aiError);
+      }
+    }
+
     // Parse the incoming JSON body against the Data Schema
     const rowData = [
       data.firmName || '',
@@ -59,14 +84,15 @@ app.post('/submit-wholesale', async (req, res) => {
       data.marketingOptIn || false,
       data.smsConsent || false,
       data.termsAccepted || false,
-      data.receivedSampleSet || false
+      data.receivedSampleSet || false,
+      aiSummary // Added Gemini AI Summary as the 21st column
     ];
 
     const sheets = await getSheetsClient();
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:T`,
+      range: `${SHEET_NAME}!A:U`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [rowData],

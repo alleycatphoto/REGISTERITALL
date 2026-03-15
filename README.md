@@ -86,5 +86,19 @@ gcloud functions deploy getHighLevelContact \
 - **Backgrounds**: Cream (`#f3f1e9`), Greige (`#e1e0da`)
 - **Typography**: Archivo (Headers), Vazirmatn (Body)
 
+## Usage Guidelines
+
+1. **Customer Application**: Customers navigate to the Wholesale Registration page on the Shopify storefront or via the standalone React web app.
+2. **Data Processing**: Upon submission, the payload is sent to the GCP Middleware, which validates and appends the data to the designated Google Sheet.
+3. **Internal Review**: The UnderItAll team opens the Google Workspace Add-on (e.g., in Gmail or Google Sheets) to quickly view the latest applications and approve/deny them.
+4. **HighLevel Sync**: Existing customers logging in will have their data automatically fetched from HighLevel via the GCP Cloud Function and autofilled into the registration iframe.
+
+## Contribution Guidelines
+
+1. **Branching**: Create a feature branch from `main` (e.g., `feature/add-new-field`).
+2. **Schema Adherence**: Any changes to the form fields MUST be reflected across all nodes (React form, Shopify Extension, GCP Middleware, and Google Sheet). See `GEMINI.md` for the strict data schema.
+3. **Brand Tokens**: Ensure all new UI components strictly follow the color and typography guidelines listed above.
+4. **Pull Requests**: Submit a PR with a detailed description of the changes and ensure all local builds pass.
+
 ## License
 Proprietary - UnderItAll Holdings LLC.
