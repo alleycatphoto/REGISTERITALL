@@ -21,3 +21,5 @@ gcp-middleware/.env
 # Google Workspace Add-on (Apps Script)
 workspace-addon/.clasp.json
 workspace-addon/node_modules/
+gcp-middleware/credentials_uia.json
+gcp-middleware/credentials.json
