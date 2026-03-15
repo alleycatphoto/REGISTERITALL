@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { UploadCloud, CheckCircle, ChevronDown, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { UploadCloud, CheckCircle, ChevronDown, Sparkles, Loader2, AlertCircle, MapPin, Building2, User, FileText } from 'lucide-react';
 
 export default function App() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -25,7 +25,7 @@ export default function App() {
     address: '',
     city: '',
     state: '',
-    country: '',
+    country: 'US',
     postalCode: '',
     companyType: '',
     taxId: '',
@@ -53,7 +53,7 @@ export default function App() {
     aiDebounceRef.current = setTimeout(async () => {
       setIsAiLoading(true);
       try {
-        const response = await fetch('https://ais-dev-yplhhcnrnjqrlu242lb73y-105070236516.us-west2.run.app/ai-assist', {
+        const response = await fetch('/ai-assist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -104,7 +104,7 @@ export default function App() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('https://ais-dev-yplhhcnrnjqrlu242lb73y-105070236516.us-west2.run.app/submit-wholesale', {
+      const response = await fetch('/submit-wholesale', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,7 +117,6 @@ export default function App() {
       const result = await response.json();
       if (response.ok) {
         setIsSubmitted(true);
-        console.log('Saved to Sheet:', result.spreadsheetId);
       } else {
         alert('Error: ' + result.error);
       }
@@ -147,7 +146,7 @@ export default function App() {
 
   const inputStyles = "w-full bg-[#e1e0da] text-[#212227] border border-[#869880] rounded-[5px] px-[15px] py-[8px] text-[12px] font-light placeholder-[#696A6D] focus:border-[#f2633a] focus:ring-1 focus:ring-[#f2633a] outline-none transition-colors";
   const labelStyles = "block text-[#212227] text-[14px] font-medium mb-1";
-  const sectionHeaderStyles = "text-[18px] font-bold font-['Archivo'] text-[#212227] border-b border-[#869880]/30 pb-2 mb-4 mt-8";
+  const sectionHeaderStyles = "text-[18px] font-bold font-['Archivo'] text-[#212227] border-b border-[#869880]/30 pb-2 mb-4 mt-8 flex items-center gap-2";
 
   return (
     <div className="min-h-screen bg-[#f3f1e9] py-12 px-4 sm:px-6 lg:px-8 font-['Vazirmatn']">
@@ -184,7 +183,7 @@ export default function App() {
           />
           <h2 className="text-2xl font-bold font-['Archivo'] text-[#212227] mb-4">Wholesale Registration</h2>
           <p className="text-[#696A6D] text-sm leading-relaxed max-w-2xl mx-auto">
-            Becoming a trade member takes less than one minute and opens the door to exclusive pricing.
+            Becoming a trade member takes less than one minute and opens the door to exclusive pricing, custom rug pad options, and resources built for design professionals.
           </p>
         </div>
 
@@ -205,7 +204,7 @@ export default function App() {
 
           {/* Business Information */}
           <div>
-            <h3 className={sectionHeaderStyles}>Business Information</h3>
+            <h3 className={sectionHeaderStyles}><Building2 className="w-5 h-5" /> Business Information</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label className={labelStyles}>Company Name *</label>
@@ -222,20 +221,56 @@ export default function App() {
               </div>
 
               <div>
+                <label className={labelStyles}>Title *</label>
+                <input required type="text" name="title" value={formData.title} onChange={handleInputChange} className={inputStyles} placeholder="e.g. CEO, Sales Director" />
+              </div>
+              <div>
                 <label className={labelStyles}>Email *</label>
                 <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className={inputStyles} placeholder="Email address" />
               </div>
 
               <div>
+                <label className={labelStyles}>Phone *</label>
+                <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className={inputStyles} placeholder="Phone number" />
+              </div>
+              <div>
                 <label className={labelStyles}>Website</label>
                 <input type="url" name="website" value={formData.website} onChange={handleInputChange} className={inputStyles} placeholder="https://www.yourwebsite.com" />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className={labelStyles}>Instagram</label>
+                <input type="text" name="instagram" value={formData.instagram} onChange={handleInputChange} className={inputStyles} placeholder="@yourighandle" />
+              </div>
+
+              {/* Address Block */}
+              <div className="sm:col-span-2 mt-4 space-y-4 border border-[#e1e0da] p-4 rounded-md bg-gray-50">
+                <h4 className="text-sm font-semibold text-[#212227] flex items-center gap-2"><MapPin className="w-4 h-4" /> Business Address</h4>
+                <div>
+                  <label className="sr-only">Street Address</label>
+                  <input required type="text" name="address" value={formData.address} onChange={handleInputChange} className={inputStyles} placeholder="Street Address" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input required type="text" name="city" value={formData.city} onChange={handleInputChange} className={inputStyles} placeholder="City" />
+                  <input required type="text" name="state" value={formData.state} onChange={handleInputChange} className={inputStyles} placeholder="State / Province" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input required type="text" name="postalCode" value={formData.postalCode} onChange={handleInputChange} className={inputStyles} placeholder="Postal Code" />
+                  <div className="relative">
+                    <select required name="country" value={formData.country} onChange={handleInputChange} className={`${inputStyles} appearance-none w-full`}>
+                      <option value="US">United States</option>
+                      <option value="CA">Canada</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-[#696A6D] pointer-events-none" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Trade Credentials */}
           <div>
-            <h3 className={sectionHeaderStyles}>Trade Credentials</h3>
+            <h3 className={sectionHeaderStyles}><FileText className="w-5 h-5" /> Trade Credentials</h3>
             <div className="space-y-5">
               <div>
                 <label className={labelStyles}>Type of Company *</label>
@@ -251,13 +286,18 @@ export default function App() {
               </div>
 
               <div>
+                <label className={labelStyles}>Tax Identifier *</label>
+                <input required type="text" name="taxId" value={formData.taxId} onChange={handleInputChange} className={inputStyles} placeholder="EIN or VAT ID" />
+              </div>
+
+              <div>
                 <label className={labelStyles}>Tax Documentation *</label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#869880] border-dashed rounded-md bg-[#e1e0da]/30 hover:bg-[#e1e0da]/60 transition-colors cursor-pointer group">
                   <div className="space-y-1 text-center">
                     <UploadCloud className="mx-auto h-10 w-10 text-[#869880] group-hover:text-[#f2633a] transition-colors" />
                     <div className="flex text-sm text-[#696A6D]">
                       <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-[#f2633a] hover:text-[#f29f87] px-2 py-1 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#f2633a]">
-                        <span>{fileData ? fileData.name : 'Upload a file'}</span>
+                        <span>{fileData ? fileData.name : 'Upload resale certificate'}</span>
                         <input id="file-upload" name="file-upload" type="file" className="sr-only" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
                       </label>
                       {!fileData && <p className="pl-1 pt-1">or drag and drop</p>}
@@ -266,6 +306,50 @@ export default function App() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Additional Information */}
+          <div>
+            <h3 className={sectionHeaderStyles}>Additional Information</h3>
+            <div className="space-y-5">
+              <div>
+                <label className={labelStyles}>Did you receive a sample set?</label>
+                <div className="flex space-x-4 mt-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input type="radio" name="sampleSet" value="Yes" onChange={handleInputChange} className="w-4 h-4 text-[#f2633a] accent-[#f2633a]" />
+                    <span className="text-sm text-[#212227]">Yes</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input type="radio" name="sampleSet" value="No" onChange={handleInputChange} className="w-4 h-4 text-[#f2633a] accent-[#f2633a]" />
+                    <span className="text-sm text-[#212227]">No</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className={labelStyles}>How did you hear about us?</label>
+                <textarea 
+                  name="additionalInfo" 
+                  value={formData.additionalInfo} 
+                  onChange={handleInputChange} 
+                  rows="3" 
+                  className={inputStyles} 
+                  placeholder="Sales Rep, Online Search, Social Media, etc."
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          {/* Terms */}
+          <div className="pt-4 border-t border-gray-100 space-y-4">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input required type="checkbox" name="marketingOptIn" checked={formData.marketingOptIn} onChange={handleInputChange} className="mt-1 w-4 h-4 text-[#f2633a] accent-[#f2633a]" />
+              <span className="text-xs text-[#696A6D]">I agree to receive marketing updates and SMS notifications.</span>
+            </label>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input required type="checkbox" name="termsAccepted" checked={formData.termsAccepted} onChange={handleInputChange} className="mt-1 w-4 h-4 text-[#f2633a] accent-[#f2633a]" />
+              <span className="text-xs text-[#696A6D]">I agree to the Terms of Service and Privacy Policy.</span>
+            </label>
           </div>
 
           {/* Submit Button */}

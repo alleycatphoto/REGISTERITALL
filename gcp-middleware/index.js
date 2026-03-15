@@ -104,7 +104,7 @@ app.post('/submit-wholesale', async (req, res) => {
     // 1. Create Spreadsheet if not found/provided
     if (!spreadsheetId) {
       const ss = await sheets.spreadsheets.create({
-        requestBody: { properties: { title: `UnderItAll Registrations - ${new Date().toLocaleDateString()}` } }
+        requestBody: { properties: { title: `UnderItAll Wholesale Registrations - ${new Date().toLocaleDateString()}` } }
       });
       spreadsheetId = ss.data.spreadsheetId;
     }
@@ -121,11 +121,12 @@ app.post('/submit-wholesale', async (req, res) => {
         }
       });
       
-      // Add Headers
+      // Add Headers - Comprehensive and descriptive for Apps Script
       const headers = [
-        "Firm Name", "Business Type", "Years", "First Name", "Last Name", "Email", 
-        "Phone", "Website", "Instagram", "Address", "City", "State", "Zip", 
-        "Tax ID", "Sample Set", "Additional Info", "Marketing", "Terms", "File URL", "AI Summary"
+        "Timestamp", "Company Name", "First Name", "Last Name", "Title", "Email", 
+        "Phone", "Website", "Instagram", "Street Address", "City", "State", 
+        "Postal Code", "Country", "Company Type", "Tax ID", "Sample Set", 
+        "Additional Info", "Marketing Opt-In", "Terms Accepted", "File URL", "AI Summary"
       ];
       await sheets.spreadsheets.values.update({
         spreadsheetId,
@@ -138,7 +139,7 @@ app.post('/submit-wholesale', async (req, res) => {
     // 3. Handle File Upload to Drive
     let fileUrl = "No file uploaded";
     if (file && file.base64) {
-      const fileMetadata = { name: `ResaleCert_${data.firmName}_${Date.now()}`, parents: [] };
+      const fileMetadata = { name: `ResaleCert_${data.companyName}_${Date.now()}` };
       const media = { mimeType: file.type, body: Buffer.from(file.base64, 'base64') };
       const uploadedFile = await drive.files.create({
         requestBody: fileMetadata,
@@ -146,7 +147,7 @@ app.post('/submit-wholesale', async (req, res) => {
         fields: 'id, webViewLink'
       });
       
-      // Make file public or shared (optional, depends on security needs)
+      // Share file so it's accessible via the link
       await drive.permissions.create({
         fileId: uploadedFile.data.id,
         requestBody: { role: 'reader', type: 'anyone' }
@@ -159,22 +160,46 @@ app.post('/submit-wholesale', async (req, res) => {
     if (process.env.GEMINI_API_KEY) {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const model = ai.models.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-      const prompt = `Summarize this applicant: ${data.firmName}, ${data.businessType}, ${data.website}. Is this a good fit for UnderItAll?`;
+      const prompt = `Analyze this wholesale applicant: 
+      Company: ${data.companyName}
+      Type: ${data.companyType}
+      Website: ${data.website}
+      Instagram: ${data.instagram}
+      
+      Provide a 1-sentence professional assessment of their fit for UnderItAll's trade program.`;
       const result = await model.generateContent(prompt);
       aiSummary = result.response.text();
     }
 
-    // 5. Append Row
+    // 5. Append Row - Map all 22 values (including Timestamp)
     const rowData = [
-      data.firmName, data.businessType, data.yearsInBusiness, data.firstName, data.lastName, 
-      data.email, data.phone, data.website, data.instagram, data.address, data.city, 
-      data.state, data.zipCode, data.taxId, data.sampleSet, data.additionalInfo, 
-      data.marketingOptIn, data.termsAccepted, fileUrl, aiSummary
+      new Date().toISOString(),
+      data.companyName,
+      data.firstName,
+      data.lastName,
+      data.title,
+      data.email,
+      data.phone,
+      data.website,
+      data.instagram,
+      data.address,
+      data.city,
+      data.state,
+      data.postalCode,
+      data.country,
+      data.companyType,
+      data.taxId,
+      data.sampleSet,
+      data.additionalInfo,
+      data.marketingOptIn ? "Yes" : "No",
+      data.termsAccepted ? "Yes" : "No",
+      fileUrl,
+      aiSummary
     ];
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: 'registration!A:T',
+      range: 'registration!A:V',
       valueInputOption: 'USER_ENTERED',
       requestBody: { values: [rowData] }
     });
