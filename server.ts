@@ -197,14 +197,7 @@ async function startServer() {
       const sheets = google.sheets({ version: 'v4', auth });
       const drive = google.drive({ version: 'v3', auth });
 
-      let spreadsheetId = requestedId || process.env.SPREADSHEET_ID;
-
-      if (!spreadsheetId) {
-        const ss = await sheets.spreadsheets.create({
-          requestBody: { properties: { title: `UnderItAll Wholesale Registrations - ${new Date().toLocaleDateString()}` } }
-        });
-        spreadsheetId = ss.data.spreadsheetId;
-      }
+      let spreadsheetId = requestedId || process.env.SPREADSHEET_ID || '1BGoI_D6I0RO6MYigefxMzI0ZvK0UxsdXhnIl4BmYKkE';
 
       const ssInfo = await sheets.spreadsheets.get({ spreadsheetId });
       let registrationSheet = ssInfo.data.sheets?.find(s => s.properties?.title === 'registration');
