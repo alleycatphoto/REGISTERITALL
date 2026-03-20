@@ -201,7 +201,7 @@ async function startServer() {
 
       const ssInfo = await sheets.spreadsheets.get({ spreadsheetId });
       let registrationSheet = ssInfo.data.sheets?.find(s => s.properties?.title === 'registration');
-      
+
       if (!registrationSheet) {
         await sheets.spreadsheets.batchUpdate({
           spreadsheetId,
@@ -209,11 +209,11 @@ async function startServer() {
             requests: [{ addSheet: { properties: { title: 'registration' } } }]
           }
         });
-        
+
         const headers = [
-          "Timestamp", "Company Name", "First Name", "Last Name", "Title", "Email", 
-          "Phone", "Website", "Instagram", "Street Address", "City", "State", 
-          "Postal Code", "Country", "Company Type", "Tax ID", "Sample Set", 
+          "Timestamp", "Company Name", "First Name", "Last Name", "Title", "Email",
+          "Phone", "Website", "Instagram", "Street Address", "City", "State",
+          "Postal Code", "Country", "Company Type", "Tax ID", "Sample Set",
           "Additional Info", "Marketing Opt-In", "Terms Accepted", "File URL", "AI Summary"
         ];
         await sheets.spreadsheets.values.update({
@@ -221,6 +221,34 @@ async function startServer() {
           range: 'registration!A1',
           valueInputOption: 'USER_ENTERED',
           requestBody: { values: [headers] }
+        });
+        // Refresh ssInfo after creating sheet
+        const updatedSsInfo = await sheets.spreadsheets.get({ spreadsheetId });
+        registrationSheet = updatedSsInfo.data.sheets?.find(s => s.properties?.title === 'registration');
+      }
+
+      // Calculate next row number
+      const rowCount = registrationSheet?.properties?.gridProperties?.rowCount || 1;
+      const nextRow = rowCount + 1;
+
+      // Expand sheet if necessary
+      if (rowCount < 1000) {
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            requests: [{
+              updateSheetProperties: {
+                properties: {
+                  sheetId: registrationSheet.properties.sheetId,
+                  gridProperties: {
+                    rowCount: 1000,
+                    columnCount: 30
+                  }
+                },
+                fields: 'gridProperties.rowCount,gridProperties.columnCount'
+              }
+            }]
+          }
         });
       }
 
@@ -294,9 +322,9 @@ async function startServer() {
         aiSummary
       ];
 
-      await sheets.spreadsheets.values.append({
+      await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: 'registration!A:Z',
+        range: `registration!A${nextRow}:Z${nextRow}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: { values: [rowData] }
       });
