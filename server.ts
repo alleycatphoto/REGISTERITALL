@@ -5,6 +5,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Readable } from "stream";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -26,12 +27,9 @@ async function startServer() {
 
   // Google Auth Setup
   async function getAuthClient() {
-    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-      throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is missing.');
-    }
-    const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS || './gcp-middleware/credentials.json';
     return new google.auth.GoogleAuth({
-      credentials,
+      keyFilename,
       scopes: [
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/drive.file'
@@ -177,8 +175,8 @@ async function startServer() {
           model: 'gemini-3-flash-preview',
           contents: [
             { role: 'user', parts: [{ text: `Context: ${JSON.stringify(context)}\n\nUser Prompt: ${prompt}` }] },
-            { role: 'model', parts: [{ functionCall: { name: call.name, args: call.args } }] },
-            { role: 'user', parts: [{ functionResponse: { name: call.name, response: toolResult } }] }
+            { role: 'model', parts: [{ functionCall: { name: call.name, args: call.args, thought_signature: call.thought_signature } }] },
+            { role: 'user', parts: [{ functionResponse: { name: call.name, thought_signature: call.thought_signature, response: toolResult } }] }
           ]
         });
         return res.json({ text: followUp.text });
@@ -235,18 +233,27 @@ async function startServer() {
 
       let fileUrl = "No file uploaded";
       if (file && file.base64) {
-        const fileMetadata = { name: `ResaleCert_${data.companyName}_${Date.now()}` };
-        const media = { mimeType: file.type, body: Buffer.from(file.base64, 'base64') };
+        const fileMetadata = {
+          name: `ResaleCert_${data.companyName}_${Date.now()}`,
+          parents: ['1APG5MVngPbOI2ZeTqD4IwY1KlwJsh22n']
+        };
+        const media = { mimeType: file.type, body: Readable.from(Buffer.from(file.base64, 'base64')) };
         const uploadedFile = await drive.files.create({
           requestBody: fileMetadata,
           media: media,
-          fields: 'id, webViewLink'
+          fields: 'id, webViewLink',
+          supportsAllDrives: true
         });
         
-        await drive.permissions.create({
-          fileId: uploadedFile.data.id!,
-          requestBody: { role: 'reader', type: 'anyone' }
-        });
+        try {
+          await drive.permissions.create({
+            fileId: uploadedFile.data.id!,
+            requestBody: { role: 'reader', type: 'anyone' },
+            supportsAllDrives: true
+          });
+        } catch (permError) {
+          console.warn('Could not set public permissions on file:', permError.message);
+        }
         fileUrl = uploadedFile.data.webViewLink!;
       }
 
@@ -296,7 +303,7 @@ async function startServer() {
 
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: 'registration!A:V',
+        range: 'registration!A:Z',
         valueInputOption: 'USER_ENTERED',
         requestBody: { values: [rowData] }
       });

@@ -15,14 +15,15 @@ app.use(cors({
 
 app.use(express.json({ limit: '50mb' }));
 
+app.get('/', (req, res) => {
+  res.json({ status: 'GCP Middleware running', endpoints: ['/ai-assist', '/submit-wholesale'] });
+});
+
 // Google Auth Setup
 async function getAuthClient() {
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-    throw new Error('GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is missing.');
-  }
-  const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+  const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS || './credentials.json';
   return new google.auth.GoogleAuth({
-    credentials,
+    keyFilename,
     scopes: [
       'https://www.googleapis.com/auth/spreadsheets',
       'https://www.googleapis.com/auth/drive.file'

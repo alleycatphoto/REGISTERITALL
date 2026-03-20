@@ -9,7 +9,7 @@ import { UploadCloud, CheckCircle, ChevronDown, Sparkles, Loader2, AlertCircle, 
 export default function App() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [spreadsheetId, setSpreadsheetId] = useState('');
+
   const [aiFeedback, setAiFeedback] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [fileData, setFileData] = useState(null);
@@ -109,7 +109,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           data: formData,
-          spreadsheetId: spreadsheetId,
+          spreadsheetId: '',
           file: fileData
         })
       });
@@ -190,17 +190,7 @@ export default function App() {
         {/* Form Section */}
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
           
-          {/* Sheet ID Input (Optional) */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-300">
-            <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Existing Google Sheet ID (Optional)</label>
-            <input 
-              type="text" 
-              value={spreadsheetId} 
-              onChange={(e) => setSpreadsheetId(e.target.value)} 
-              className="w-full bg-transparent text-xs border-none focus:ring-0 p-0 placeholder-gray-300"
-              placeholder="Leave blank to create a new sheet"
-            />
-          </div>
+
 
           {/* Business Information */}
           <div>
