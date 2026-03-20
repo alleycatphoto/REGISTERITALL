@@ -22,4 +22,8 @@ gcp-middleware/.env
 workspace-addon/.clasp.json
 workspace-addon/node_modules/
 gcp-middleware/credentials_uia.json
+
+# Postman artifacts
+.postman/
+postman/
 gcp-middleware/credentials.json
